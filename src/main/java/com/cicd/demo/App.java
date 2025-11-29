@@ -1,5 +1,9 @@
 package com.cicd.demo;
-
+/**
+ * Calculatrice Scientifique - Version améliorée
+ * Auteur: Amira
+ * Projet CI/CD avec Jenkins, Docker et GitHub
+ */
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
