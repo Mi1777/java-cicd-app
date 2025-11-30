@@ -8,24 +8,32 @@ pipeline {
             }
         }
         
-        stage('Install Maven') {
+        stage('Build with Wrapper') {
             steps {
-                echo '📥 Installation de Maven...'
-                bat '''
-                    if not exist "C:\\maven" (
-                        curl -L https://archive.apache.org/dist/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.zip -o maven.zip
-                        powershell -Command "Expand-Archive -Path maven.zip -DestinationPath C:\\"
-                        ren "C:\\apache-maven-3.9.6" "C:\\maven"
-                        del maven.zip
-                    )
-                '''
-            }
-        }
-        
-        stage('Build') {
-            steps {
-                echo '🔨 Construction du projet...'
-                bat 'C:\\maven\\bin\\mvn.cmd clean package -DskipTests'
+                echo '🔨 Construction avec Maven Wrapper...'
+                script {
+                    // Vérifier si Maven Wrapper existe
+                    def wrapperExists = fileExists('mvnw') || fileExists('mvnw.cmd')
+                    
+                    if (wrapperExists) {
+                        bat 'mvnw.cmd clean package -DskipTests'
+                    } else {
+                        echo '❌ Maven Wrapper non trouvé. Utilisation de Maven système...'
+                        // Essayer Maven système
+                        bat '''
+                            where mvn >nul 2>&1
+                            if %errorlevel% equ 0 (
+                                mvn clean package -DskipTests
+                            ) else (
+                                echo "ERREUR: Maven non trouvé!"
+                                echo "Solutions:"
+                                echo "1. Installez Maven sur le système"
+                                echo "2. Ajoutez Maven Wrapper au projet (mvn -N io.takari:maven:wrapper)"
+                                exit 1
+                            )
+                        '''
+                    }
+                }
             }
         }
     }
