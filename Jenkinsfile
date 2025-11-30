@@ -6,29 +6,18 @@ pipeline {
         jdk 'JDK11'
     }
     
-    environment {
-        DOCKER_IMAGE = 'java-cicd-app'
-    }
-    
     stages {
-        stage('Checkout') {
-            steps {
-                echo '📥 Récupération du code depuis GitHub...'
-                checkout scm
-            }
-        }
-        
         stage('Build') {
             steps {
-                echo '🔨 Installation des dépendances Maven...'
-                bat 'wsl mvn clean install -DskipTests'
+                echo '🔨 Build Maven...'
+                bat 'mvn clean compile'
             }
         }
         
         stage('Tests') {
             steps {
-                echo '🧪 Exécution des tests unitaires (JUnit)...'
-                bat 'wsl mvn test'
+                echo '🧪 Tests unitaires...'
+                bat 'mvn test'
             }
             post {
                 always {
@@ -37,45 +26,21 @@ pipeline {
             }
         }
         
-        stage('SAST - SonarQube') {
+        stage('Package') {
             steps {
-                echo '🔍 Analyse de sécurité avec SonarQube...'
-                script {
-                    try {
-                        withSonarQubeEnv('SonarQube') {
-                            bat 'wsl mvn sonar:sonar'
-                        }
-                    } catch (Exception e) {
-                        echo "⚠️ SonarQube non disponible, passage au stage suivant"
-                    }
-                }
-            }
-        }
-        
-        stage('Build Docker Image') {
-            steps {
-                echo '🐳 Construction de l\'image Docker...'
-                bat 'wsl docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} .'
-                bat 'wsl docker tag ${DOCKER_IMAGE}:${BUILD_NUMBER} ${DOCKER_IMAGE}:latest'
-            }
-        }
-        
-        stage('Déploiement') {
-            steps {
-                echo '🚀 Déploiement du container...'
-                bat 'wsl docker stop java-app || true'
-                bat 'wsl docker rm java-app || true'
-                bat 'wsl docker run -d --name java-app -p 8081:8080 ${DOCKER_IMAGE}:latest'
+                echo '📦 Création du WAR...'
+                bat 'mvn package'
             }
         }
     }
     
     post {
         success {
-            echo '✅ Pipeline exécutée avec succès !'
+            echo '✅ Pipeline réussie !'
+            archiveArtifacts 'target/*.war'
         }
         failure {
-            echo '❌ Échec de la pipeline !'
+            echo '❌ Échec de la pipeline'
         }
     }
 }
