@@ -4,6 +4,12 @@ pipeline {
         maven 'M3'
         jdk 'JDK8'
     }
+    stage('Package') {
+    steps {
+        bat 'mvn dependency:purge-local-repository'
+        bat 'mvn clean package -DskipTests'
+    }
+}
     stages {
         stage('Compile') {
             steps {
