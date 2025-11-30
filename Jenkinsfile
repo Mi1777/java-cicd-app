@@ -2,8 +2,8 @@ pipeline {
     agent any
     
     tools {
-        maven 'Maven-3.9'
-        jdk 'JDK-17'
+        maven 'Maven'        // Corrigé : utilise le nom exact de votre outil Maven
+        jdk 'JDK11'          // Corrigé : utilise le nom exact de votre JDK
     }
     
     environment {
