@@ -8,31 +8,31 @@ pipeline {
             }
         }
         
-        stage('Compile') {
+        stage('Install Maven') {
             steps {
-                echo '🔨 Compilation...'
-                bat 'mvn clean compile'
+                echo '📥 Installation de Maven...'
+                bat '''
+                    if not exist "C:\\maven" (
+                        curl -L https://archive.apache.org/dist/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.zip -o maven.zip
+                        powershell -Command "Expand-Archive -Path maven.zip -DestinationPath C:\\"
+                        ren "C:\\apache-maven-3.9.6" "C:\\maven"
+                        del maven.zip
+                    )
+                '''
             }
         }
         
-        stage('Package') {
+        stage('Build') {
             steps {
-                echo '📦 Création du JAR...'
-                bat 'mvn clean package -DskipTests'
+                echo '🔨 Construction du projet...'
+                bat 'C:\\maven\\bin\\mvn.cmd clean package -DskipTests'
             }
         }
     }
     
     post {
         always {
-            echo '📋 Build terminé'
-        }
-        success {
-            echo '✅ Build réussi !'
-            archiveArtifacts 'target/*.jar'
-        }
-        failure {
-            echo '❌ Build échoué !'
+            echo '📋 Pipeline terminé'
         }
     }
 }
