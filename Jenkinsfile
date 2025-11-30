@@ -5,7 +5,12 @@ pipeline {
         maven 'Maven'
         jdk 'JDK11'
     }
-    
+    stage('Nettoyage Cache') {
+    steps {
+        echo '🧹 Nettoyage cache Maven...'
+        bat 'mvn dependency:purge-local-repository -DactTransitively=false -DreResolve=false'
+    }
+}
     stages {
         stage('Build') {
             steps {
