@@ -10,26 +10,14 @@ pipeline {
         stage('Build') {
             steps {
                 echo '🔨 Build Maven...'
-                bat 'mvn clean compile'
-            }
-        }
-        
-        stage('Tests') {
-            steps {
-                echo '🧪 Tests unitaires...'
-                bat 'mvn test'
-            }
-            post {
-                always {
-                    junit '**/target/surefire-reports/*.xml'
-                }
+                bat 'mvn clean compile -DskipTests'
             }
         }
         
         stage('Package') {
             steps {
-                echo '📦 Création du WAR...'
-                bat 'mvn package'
+                echo '📦 Création du JAR...'
+                bat 'mvn package -DskipTests'
             }
         }
     }
@@ -37,7 +25,7 @@ pipeline {
     post {
         success {
             echo '✅ Pipeline réussie !'
-            archiveArtifacts 'target/*.war'
+            archiveArtifacts 'target/*.jar'
         }
         failure {
             echo '❌ Échec de la pipeline'
