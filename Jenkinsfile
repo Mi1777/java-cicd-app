@@ -2,8 +2,8 @@ pipeline {
     agent any
     
     tools {
-        maven 'Maven'        // Corrigé : utilise le nom exact de votre outil Maven
-        jdk 'JDK11'          // Corrigé : utilise le nom exact de votre JDK
+        maven 'Maven'
+        jdk 'JDK11'
     }
     
     environment {
@@ -21,14 +21,14 @@ pipeline {
         stage('Build') {
             steps {
                 echo '🔨 Installation des dépendances Maven...'
-                sh 'mvn clean install -DskipTests'
+                bat 'wsl mvn clean install -DskipTests'
             }
         }
         
         stage('Tests') {
             steps {
                 echo '🧪 Exécution des tests unitaires (JUnit)...'
-                sh 'mvn test'
+                bat 'wsl mvn test'
             }
             post {
                 always {
@@ -43,7 +43,7 @@ pipeline {
                 script {
                     try {
                         withSonarQubeEnv('SonarQube') {
-                            sh 'mvn sonar:sonar'
+                            bat 'wsl mvn sonar:sonar'
                         }
                     } catch (Exception e) {
                         echo "⚠️ SonarQube non disponible, passage au stage suivant"
@@ -55,21 +55,17 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo '🐳 Construction de l\'image Docker...'
-                sh '''
-                    docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} .
-                    docker tag ${DOCKER_IMAGE}:${BUILD_NUMBER} ${DOCKER_IMAGE}:latest
-                '''
+                bat 'wsl docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} .'
+                bat 'wsl docker tag ${DOCKER_IMAGE}:${BUILD_NUMBER} ${DOCKER_IMAGE}:latest'
             }
         }
         
         stage('Déploiement') {
             steps {
                 echo '🚀 Déploiement du container...'
-                sh '''
-                    docker stop java-app || true
-                    docker rm java-app || true
-                    docker run -d --name java-app -p 8081:8080 ${DOCKER_IMAGE}:latest
-                '''
+                bat 'wsl docker stop java-app || true'
+                bat 'wsl docker rm java-app || true'
+                bat 'wsl docker run -d --name java-app -p 8081:8080 ${DOCKER_IMAGE}:latest'
             }
         }
     }
