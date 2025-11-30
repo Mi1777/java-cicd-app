@@ -5,24 +5,12 @@ pipeline {
         maven 'Maven'
         jdk 'JDK11'
     }
-    stage('Nettoyage Cache') {
-    steps {
-        echo '🧹 Nettoyage cache Maven...'
-        bat 'mvn dependency:purge-local-repository -DactTransitively=false -DreResolve=false'
-    }
-}
+    
     stages {
-        stage('Build') {
+        stage('Build & Package') {
             steps {
-                echo '🔨 Build Maven...'
-                bat 'mvn clean compile -DskipTests'
-            }
-        }
-        
-        stage('Package') {
-            steps {
-                echo '📦 Création du JAR...'
-                bat 'mvn package -DskipTests'
+                echo '🔨 Build et package...'
+                bat 'mvn clean package -DskipTests'
             }
         }
     }
@@ -32,8 +20,8 @@ pipeline {
             echo '✅ Pipeline réussie !'
             archiveArtifacts 'target/*.jar'
         }
-        failure {
-            echo '❌ Échec de la pipeline'
+        always {
+            echo '📊 Build terminé'
         }
     }
 }
